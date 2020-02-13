@@ -46,9 +46,12 @@ class TextNet(nn.Module):
     def forward(self, x):
         C1, C2, C3, C4, C5 = self.backbone(x)
         up5 = self.deconv5(C5)
+        ### deconv5 定义为ConvTranspose2d将c5通道数下降到和c4一样大小
         up5 = F.relu(up5)
 
         up4 = self.merge4(C4, up5)
+        ### merge* 定义为Upsample，包括1x1,3x3卷积各一个，
+        ### 和一个ConvTranspose2d将ci通道数下降到和c（i-1）一样大小
         up4 = F.relu(up4)
 
         up3 = self.merge3(C3, up4)
@@ -59,7 +62,8 @@ class TextNet(nn.Module):
 
         up1 = self.merge1(C1, up2)
         output = self.predict(up1)
-
+        ### predict 定义为Upsample，包括3x3和一个1x1
+        ### 同时上采样到output_channel大小
         return output
 
     def load_model(self, model_path):
