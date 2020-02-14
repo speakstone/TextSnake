@@ -6,7 +6,7 @@ from dataset.data_util import pil_load_img
 from dataset.dataload import TextDataset, TextInstance
 
 class TotalText(TextDataset):
-
+    ###TotalText获取图片和标签
     def __init__(self, data_root, ignore_list=None, is_training=True, transform=None):
         super().__init__(transform)
         self.data_root = data_root
@@ -52,11 +52,13 @@ class TotalText(TextDataset):
         image_path = os.path.join(self.image_root, image_id)
 
         # Read image data
+        # PIL读取图片后转为numpy
         image = pil_load_img(image_path)
 
         # Read annotation
         annotation_id = self.annotation_list[item]
         annotation_path = os.path.join(self.annotation_root, annotation_id)
+        #读取mat文件
         polygons = self.parse_mat(annotation_path)
 
         for i, polygon in enumerate(polygons):

@@ -27,9 +27,10 @@ class TextInstance(object):
 
         if len(points) > 4:
             # remove point if area is almost unchanged after removing it
+            # contourArea计算轮廓包围面积
             ori_area = cv2.contourArea(points)
             for p in range(len(points)):
-                # attempt to remove p
+                # 计算删除多余的点（删除后面积几乎不变）
                 index = list(range(len(points)))
                 index.remove(p)
                 area = cv2.contourArea(points[index])
@@ -40,8 +41,10 @@ class TextInstance(object):
             self.points = np.array(points)
 
     def find_bottom_and_sideline(self):
-        self.bottoms = find_bottom(self.points)  # find two bottoms of this Text
-        self.e1, self.e2 = find_long_edges(self.points, self.bottoms)  # find two long edge sequence
+        # 计算俩个文本区域的俩端
+        self.bottoms = find_bottom(self.points)
+        # 计算长边序列
+        self.e1, self.e2 = find_long_edges(self.points, self.bottoms)
 
     def disk_cover(self, n_disk=15):
         """
