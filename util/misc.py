@@ -71,11 +71,13 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 def norm2(x, axis=None):
+    # 平方和开根号，计算俩点距离
     if axis:
         return np.sqrt(np.sum(x ** 2, axis=axis))
     return np.sqrt(np.sum(x ** 2))
 
 def cos(p1, p2):
+    # 计算p1，p2连接处cos值
     return (p1 * p2).sum() / (norm2(p1) * norm2(p2))
 
 def vector_sin(v):
@@ -91,20 +93,22 @@ def vector_cos(v):
     return v[0] / l
 
 def find_bottom(pts):
-
+    # find_bottom 求取多边形首尾俩端
     if len(pts) > 4:
-        e = np.concatenate([pts, pts[:3]])
+        e = np.concatenate([pts, pts[:3]]) #闭合多边形，添加三个起始点
         candidate = []
         for i in range(1, len(pts) + 1):
             v_prev = e[i] - e[i - 1]
             v_next = e[i + 2] - e[i + 1]
             if cos(v_prev, v_next) < -0.7:
                 candidate.append((i % len(pts), (i + 1) % len(pts), norm2(e[i] - e[i + 1])))
+                # i % len(pts)防止到达pts[:3]位置
 
         if len(candidate) != 2 or candidate[0][0] == candidate[1][1] or candidate[0][1] == candidate[1][0]:
-            # if candidate number < 2, or two bottom are joined, select 2 farthest edge
+            # 没找到俩个边，或者俩个边中的点存在重复
             mid_list = []
             for i in range(len(pts)):
+                # 取出俩个点的中心点添加到原坐标集合中，将滑动步长减少了一倍
                 mid_point = (e[i] + e[(i + 1) % len(pts)]) / 2
                 mid_list.append((i, (i + 1) % len(pts), mid_point))
 
@@ -130,10 +134,12 @@ def find_bottom(pts):
 
 def split_long_edges(points, bottoms):
     """
-    Find two long edge sequence of and polygon
+    计算两个长边序列（未使用）
     """
+    #取出收尾俩边起始点
     b1_start, b1_end = bottoms[0]
     b2_start, b2_end = bottoms[1]
+
     n_pts = len(points)
 
     i = b1_end + 1
@@ -151,6 +157,9 @@ def split_long_edges(points, bottoms):
 
 
 def find_long_edges(points, bottoms):
+    """
+        计算两个长边序列
+    """
     b1_start, b1_end = bottoms[0]
     b2_start, b2_end = bottoms[1]
     n_pts = len(points)

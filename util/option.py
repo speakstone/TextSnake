@@ -61,13 +61,14 @@ class BaseOptions(object):
         self.parser.add_argument('--rescale', type=float, default=255.0, help='rescale factor')
         self.parser.add_argument('--means', type=int, default=(0.485, 0.456, 0.406), nargs='+', help='mean')
         self.parser.add_argument('--stds', type=int, default=(0.229, 0.224, 0.225), nargs='+', help='std')
+        ####pytorch 使用mean = [0.485, 0.456, 0.406]和进行归一化std = [0.229, 0.224, 0.225]对图片进行归一化，阈值
         self.parser.add_argument('--input_size', default=512, type=int, help='model input size')
 
         # eval args
-        self.parser.add_argument('--checkepoch', default=-1, type=int, help='Load checkpoint number')
+        self.parser.add_argument('--checkepoch', default=180, type=int, help='Load checkpoint number')
 
         # demo args
-        self.parser.add_argument('--img_root', default=None, type=str, help='Path to deploy images')
+        self.parser.add_argument('--img_root', default=r"C:\Users\stone\Desktop\TextSnake_pytorch\data\test", type=str, help='Path to deploy images')
 
     def parse(self, fixed=None):
 
@@ -79,8 +80,8 @@ class BaseOptions(object):
         return args
 
     def initialize(self, fixed=None):
-
-        # Parse options
+        fixed = "1"
+        # 解析选项
         self.args = self.parse(fixed)
 
         # Setting default torch Tensor type

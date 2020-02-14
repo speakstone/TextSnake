@@ -4,6 +4,8 @@ import torch
 config = EasyDict()
 
 # dataloader jobs number
+config.exp_name = 'test_1'
+
 config.num_workers = 4
 
 # batch_size
