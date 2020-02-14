@@ -8,6 +8,7 @@ class TextLoss(nn.Module):
         super().__init__()
 
     def ohem(self, predict, target, train_mask, negative_ratio=3.):
+        #OHEM的核心思想就是增加错分类样本的权重
         pos = (target * train_mask).byte()
         neg = ((1 - target) * train_mask).byte()
 
@@ -15,12 +16,15 @@ class TextLoss(nn.Module):
 
         if n_pos.item() > 0:
             loss_pos = F.cross_entropy(predict[pos], target[pos], reduction='sum')
+            # cross_entropy 交叉熵调用函数
             loss_neg = F.cross_entropy(predict[neg], target[neg], reduction='none')
             n_neg = min(int(neg.float().sum().item()), int(negative_ratio * n_pos.float()))
+            # item 获取python number
         else:
             loss_pos = 0.
             loss_neg = F.cross_entropy(predict[neg], target[neg], reduction='none')
             n_neg = 100
+        #阈值n_neg ，
         loss_neg, _ = torch.topk(loss_neg, n_neg)
 
         return (loss_pos + loss_neg.sum()) / (n_pos + n_neg).float()

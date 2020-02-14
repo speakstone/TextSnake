@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from network.vgg import VGG16
 
 class Upsample(nn.Module):
-
+    ### cat 操作和卷积操作
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.conv1x1 = nn.Conv2d(in_channels, in_channels, kernel_size=1, stride=1, padding=0)
