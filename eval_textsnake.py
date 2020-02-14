@@ -86,7 +86,9 @@ def main():
     test_loader = data.DataLoader(testset, batch_size=1, shuffle=False, num_workers=cfg.num_workers)
 
     # Model
+    # 载入模型
     model = TextNet(is_training=False, backbone=cfg.net)
+    # 载入参数
     model_path = os.path.join(cfg.save_dir, cfg.exp_name, \
               'textsnake_{}_{}.pth'.format(model.backbone_name, cfg.checkepoch))
     model.load_model(model_path)
@@ -94,6 +96,7 @@ def main():
     # copy to cuda
     model = model.to(cfg.device)
     if cfg.cuda:
+        # cudn加速运算
         cudnn.benchmark = True
     detector = TextDetector(model, tr_thresh=cfg.tr_thresh, tcl_thresh=cfg.tcl_thresh)
 
@@ -109,8 +112,12 @@ def main():
 
 
 if __name__ == "__main__":
-    # parse arguments
+    import os
+    # 指定gpu
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    # 载入参数
     option = BaseOptions()
+    #初始化参数
     args = option.initialize()
 
     update_config(cfg, args)

@@ -67,19 +67,23 @@ def train(model, train_loader, criterion, scheduler, optimizer, epoch, logger):
 
         img, train_mask, tr_mask, tcl_mask, radius_map, sin_map, cos_map = to_device(
             img, train_mask, tr_mask, tcl_mask, radius_map, sin_map, cos_map)
-
+        # 模型输出
         output = model(img)
+        # loss 计算
         tr_loss, tcl_loss, sin_loss, cos_loss, radii_loss = \
             criterion(output, tr_mask, tcl_mask, sin_map, cos_map, radius_map, train_mask)
         loss = tr_loss + tcl_loss + sin_loss + cos_loss + radii_loss
 
         # backward
+        # 每次迭代清空上一次的梯度
         optimizer.zero_grad()
+        # 反向传播
         loss.backward()
+        # 更新梯度
         optimizer.step()
-
+        # 更新loss
         losses.update(loss.item())
-        # measure elapsed time
+        # 计算耗时
         batch_time.update(time.time() - end)
         end = time.time()
 
@@ -123,7 +127,7 @@ def validation(model, valid_loader, criterion, epoch, logger):
                 img, train_mask, tr_mask, tcl_mask, radius_map, sin_map, cos_map)
 
             output = model(img)
-
+            #output模型预测7通道分数图，tr_mask, tcl_mask, sin_map, cos_map, radius_map, train_mask为标签
             tr_loss, tcl_loss, sin_loss, cos_loss, radii_loss = \
                 criterion(output, tr_mask, tcl_mask, sin_map, cos_map, radius_map, train_mask)
             loss = tr_loss + tcl_loss + sin_loss + cos_loss + radii_loss
@@ -189,6 +193,7 @@ def main():
         pass
 
     train_loader = data.DataLoader(trainset, batch_size=cfg.batch_size, shuffle=True, num_workers=cfg.num_workers)
+    # DataLoader时，设置pin_memory = True，则意味着生成的Tensor数据最开始是属于内存中的锁页内存，这样将内存的Tensor转义到GPU的显存就会更快一些。
     if valset:
         val_loader = data.DataLoader(valset, batch_size=cfg.batch_size, shuffle=False, num_workers=cfg.num_workers)
     else:
@@ -198,6 +203,7 @@ def main():
     logger = LogSummary(log_dir)
 
     # Model
+    # 载入模型，backbone默认为vgg
     model = TextNet(is_training=True, backbone=cfg.net)
     if cfg.mgpu:
         model = nn.DataParallel(model)
@@ -205,17 +211,21 @@ def main():
     model = model.to(cfg.device)
     if cfg.cuda:
         cudnn.benchmark = True
-
+    # 载入继续训练
     if cfg.resume:
         load_model(model, cfg.resume)
 
+    # loss定义主要有loss_tr, loss_tcl, loss_radii, loss_sin, loss_cos
     criterion = TextLoss()
     lr = cfg.lr
+    # Adam梯度优化
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr)
 
     if cfg.dataset == 'synth-text':
+        # 固定学习率。当last_epoch = -1时，将初始lr设置为lr。
         scheduler = FixLR(optimizer)
     else:
+        # 动态学习率.每step_size步， lr*0.1
         scheduler = lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.1)
 
     print('Start training TextSnake.')

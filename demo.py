@@ -77,8 +77,9 @@ def main():
 
     # Model
     model = TextNet(is_training=False, backbone=cfg.net)
-    model_path = os.path.join(cfg.save_dir, cfg.exp_name, \
-              'textsnake_{}_{}.pth'.format(model.backbone_name, cfg.checkepoch))
+    # model_path = os.path.join(cfg.save_dir, cfg.exp_name, \
+    #           'textsnake_{}_{}.pth'.format(model.backbone_name, cfg.checkepoch))
+    model_path = r"checkpoint\textsnake_vgg_0.pth"
     model.load_model(model_path)
 
     # copy to cuda
