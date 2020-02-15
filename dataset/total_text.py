@@ -63,6 +63,7 @@ class TotalText(TextDataset):
 
         for i, polygon in enumerate(polygons):
             if polygon.text != '#':
+                # 计算首位俩边和上下俩边
                 polygon.find_bottom_and_sideline()
 
         return self.get_training_data(image, polygons, image_id=image_id, image_path=image_path)
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     )
 
     trainset = TotalText(
-        data_root='data/total-text',
+        data_root=r'C:\Users\stone\Desktop\TextSnake_pytorch\data\total-text',
         # ignore_list='./ignore_list.txt',
         is_training=True,
         transform=transform

@@ -52,10 +52,12 @@ class TextInstance(object):
         :param n_disk: number of disks
         :return:
         """
+        # split_edge_seqence将上下俩个长边不等间距分成n_disk个点
         inner_points1 = split_edge_seqence(self.points, self.e1, n_disk)
         inner_points2 = split_edge_seqence(self.points, self.e2, n_disk)
         inner_points2 = inner_points2[::-1]  # innverse one of long edge
 
+        # 产生中心线坐标集合
         center_points = (inner_points1 + inner_points2) / 2  # disk center
         radii = norm2(inner_points1 - center_points, axis=1)  # disk radius
 
@@ -121,7 +123,7 @@ class TextDataset(data.Dataset):
     def make_text_center_line(self, sideline1, sideline2, center_line, radius, \
                               tcl_mask, radius_map, sin_map, cos_map, expand=0.3, shrink=1):
 
-        # TODO: shrink 1/2 * radius at two line end
+        # 生成中心线，往内进行缩短1/2个read
         for i in range(shrink, len(center_line) - 1 - shrink):
 
             c1 = center_line[i]
@@ -146,9 +148,11 @@ class TextDataset(data.Dataset):
             self.fill_polygon(cos_map, polygon, value=cos_theta)
 
     def get_training_data(self, image, polygons, image_id, image_path):
-
+        # 处理训练数据和利用首尾和上下俩边生成标签
+        # polygons包括{'orient'， 'text' , 'points', 'bottoms', 'e1', 'e2'}
         H, W, _ = image.shape
 
+        # 此处功能重复，暂时未找到作用
         for i, polygon in enumerate(polygons):
             if polygon.text != '#':
                 polygon.find_bottom_and_sideline()
@@ -156,6 +160,7 @@ class TextDataset(data.Dataset):
         if self.transform:
             image, polygons = self.transform(image, copy.copy(polygons))
 
+        # 初始化tcl_mask， radius_map， sin_map和 cos_map
         tcl_mask = np.zeros(image.shape[:2], np.uint8)
         radius_map = np.zeros(image.shape[:2], np.float32)
         sin_map = np.zeros(image.shape[:2], np.float32)
