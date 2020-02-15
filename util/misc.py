@@ -129,6 +129,8 @@ def find_bottom(pts):
         d2 = norm2(pts[2] - pts[1]) + norm2(pts[0] - pts[3])
         bottoms = [(0, 1), (2, 3)] if d1 < d2 else [(1, 2), (3, 0)]
     assert len(bottoms) == 2, 'fewer than 2 bottoms'
+    # 注意：得出的4个点是按顺序可以循环的，例如：
+    # [(3, 4), (0, 1)]
     return bottoms
 
 
@@ -165,8 +167,9 @@ def find_long_edges(points, bottoms):
     n_pts = len(points)
     i = (b1_end + 1) % n_pts
     long_edge_1 = []
-
+    ### 取出首尾俩端第一个终点循环添加直到第二终点，这样首段的点就会被添加
     while (i % n_pts != b2_end):
+
         start = (i - 1) % n_pts
         end = i % n_pts
         long_edge_1.append((start, end))
@@ -174,6 +177,7 @@ def find_long_edges(points, bottoms):
 
     i = (b2_end + 1) % n_pts
     long_edge_2 = []
+    ### 取出首尾俩端第二个终点循环添加直到第一个终点，这样首端的点就会被多余添加
     while (i % n_pts != b1_end):
         start = (i - 1) % n_pts
         end = i % n_pts
@@ -183,18 +187,18 @@ def find_long_edges(points, bottoms):
 
 
 def split_edge_seqence(points, long_edge, n_parts):
-
-    edge_length = [norm2(points[e1] - points[e2]) for e1, e2 in long_edge]
-    point_cumsum = np.cumsum([0] + edge_length)
-    total_length = sum(edge_length)
+    # 将上下俩个长边的点均分成n_parts个点，n_parts为阈值，默认15
+    # 但是因为点之间的步长非固定值，所以要先从长距离点之间添加
+    edge_length = [norm2(points[e1] - points[e2]) for e1, e2 in long_edge]# np.cumsum(,axis)计算在axis维度的累和，返回迭代相加的列表
+    point_cumsum = np.cumsum([0] + edge_length) # 计算总长度
+    total_length = sum(edge_length) # 计算默认n_parts下应该产生的步长
     length_per_part = total_length / n_parts
 
     cur_node = 0  # first point
     splited_result = []
 
     for i in range(1, n_parts):
-        cur_end = i * length_per_part
-
+        cur_end = i * length_per_part # 进行添加时，如果添加的点产生的长度超过了该点之前所有间距和，那么跳到下一个点
         while(cur_end > point_cumsum[cur_node + 1]):
             cur_node += 1
 
@@ -206,6 +210,7 @@ def split_edge_seqence(points, long_edge, n_parts):
         ratio = end_shift / edge_length[cur_node]
         new_point = e1 + ratio * (e2 - e1)
         # print(cur_end, point_cumsum[cur_node], end_shift, edge_length[cur_node], '=', new_point)
+        # 产生新的外框点集合
         splited_result.append(new_point)
 
     # add first and last point
@@ -251,4 +256,10 @@ def merge_polygons(polygons, merge_map):
 
     return final_polygons
 
+a = np.array([[49, 388],[48, 343],[48, 291],[106, 289],[168, 291],[165, 331],[163, 378],[105, 383]])
+
+c = find_bottom(a)
+d = find_long_edges(a, c)
+print(c)
+print(d)
 
